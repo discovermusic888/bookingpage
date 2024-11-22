@@ -155,44 +155,46 @@
     }
 
     document.getElementById('submit-button').addEventListener('click', async () => {
-      // 顯示處理中
       const loading = document.getElementById('loading');
+      const errorMessage = document.getElementById('error-message');
       loading.style.display = 'block';
+      errorMessage.style.display = 'none';
 
-      // 抓取表單資料
+      // 收集表單數據
       const data = {
         name: document.getElementById('name').value,
-        age: document.getElementById('age').value,
+        age: parseInt(document.getElementById('age').value, 10),
         phone: document.getElementById('phone').value,
         course: document.getElementById('course').value,
         startTime: document.getElementById('startTime').value,
         endTime: document.getElementById('endTime').value,
       };
 
-      // 驗證表單資料
+      // 驗證表單數據
       const error = validateForm(data);
       if (error) {
-        const errorMessage = document.getElementById("error-message");
         errorMessage.textContent = error;
         errorMessage.style.display = "block";
-        loading.style.display = 'none'; // 隱藏處理中
+        loading.style.display = 'none';
         return;
       }
 
       try {
         // 發送 POST 請求
-        const url = "https://script.google.com/macros/s/AKfycbzKa9HJOLz8bMv1LoUN_j5e6gFX5a1Xn_SDCdiQLlUeeJ3EhVI8iApYj4lLMMsoWTdy9A/exec"; // 替換為您的 Google Apps Script URL
+        const url = "https://script.google.com/macros/s/AKfycbxIFBFVXYqkhRnkTzFOpbwT4P0qLcZuEw2GJzHYVB6tCAssytHZ-LdmrYIkeV8kXWYnSA/exec";
         const response = await fetch(url, {
           method: 'POST',
-          body: JSON.stringify(data),
           headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*' // 確保 CORS 頭部設置正確
           },
+          body: JSON.stringify(data),
         });
 
-        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
+        const result = await response.json();
         if (result.status === "success") {
           alert("預約成功！");
           document.getElementById('bookingForm').reset();
@@ -200,10 +202,10 @@
           alert("提交失敗：" + result.message);
         }
       } catch (error) {
-        console.error("Error:", error);
+        console.error("Fetch Error:", error);
         alert("提交失敗，請稍後再試。");
       } finally {
-        loading.style.display = 'none'; // 隱藏處理中
+        loading.style.display = 'none';
       }
     });
   </script>
