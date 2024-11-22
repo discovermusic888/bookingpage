@@ -3,14 +3,28 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Google Calendar 予約</title>
-  <script src="https://apis.google.com/js/api.js"></script>
-  <script src="calendar.js"></script> <!-- 引入 JavaScript 文件 -->
+  <title>預約系統</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+    }
+    iframe {
+      display: block;
+      margin: 0 auto;
+      width: 100%;
+      height: 800px;
+      border: none;
+    }
+  </style>
 </head>
 <body>
-  <h1>選擇一個預約時段</h1>
-  <div id="appointment-buttons">
-    <!-- 預約時段按鈕會顯示在這裡 -->
-  </div>
+  <h1>預約系統</h1>
+  <!-- 嵌入 Google Apps Script 的網頁應用 -->
+  <iframe src="https://script.google.com/macros/s/AKfycbwtzkeQYT7fUK3J0Lcp67uUCYCgMhfOXZque1A-d72rzNK1F7zM6mLcwfFuIqAQqUerlg/exec"></iframe>
 </body>
 </html>
