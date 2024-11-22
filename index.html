@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>預約日曆</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .calendar-container {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    iframe {
+      border: 0;
+      width: 100%;
+      height: 600px;
+      max-width: 800px;
+    }
+    .form-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: #f9f9f9;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .loading {
+      text-align: center;
+      margin: 10px 0;
+      font-size: 14px;
+      color: #555;
+    }
+    @media screen and (max-width: 768px) {
+      iframe {
+        height: 400px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>選擇您要預約的時間</h1>
+
+  <div class="calendar-container">
+    <!-- 嵌入 Google 日曆 -->
+    <iframe src="https://calendar.google.com/calendar/embed?src=discovermusic.888%40gmail.com&ctz=Asia%2FTaipei"
+            frameborder="0" 
+            scrolling="no"></iframe>
+  </div>
+
+  <div class="form-container">
+    <form id="bookingForm">
+      <label for="name">姓名:</label>
+      <input type="text" id="name" name="name" placeholder="請輸入姓名" required>
+
+      <label for="age">學生年齡:</label>
+      <input type="number" id="age" name="age" placeholder="請輸入年齡" required>
+      
+      <label for="phone">聯絡電話:</label>
+      <input type="tel" id="phone" name="phone" placeholder="請輸入聯絡電話" required>
+
+      <label for="course">課程選擇:</label>
+      <select id="course" name="course" required>
+        <option value="">請選擇課程</option>
+        <option value="爵士鼓個別課">爵士鼓個別課</option>
+        <option value="爵士鼓團體班">爵士鼓團體班</option>
+        <option value="鋼琴個別課">鋼琴個別課</option>
+      </select>
+
+      <label for="startTime">選擇開始時間:</label>
+      <input type="datetime-local" id="startTime" name="startTime" required>
+      
+      <label for="endTime">選擇結束時間:</label>
+      <input type="datetime-local" id="endTime" name="endTime" required>
+      
+      <div id="error-message" class="error" style="display: none;"></div>
+      <button type="button" id="submit-button">確認預約</button>
+      <div class="loading" id="loading" style="display: none;">處理中，請稍候...</div>
+    </form>
+  </div>
+
+  <script>
+    // 表單驗證邏輯
+    function validateForm(data) {
+      const { name, age, phone, course, startTime, endTime } = data;
+
+      // 清除之前的錯誤訊息
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.style.display = "none";
+
+      // 驗證姓名是否填寫
+      if (!name) {
+        return "請填寫姓名。";
+      }
+
+      // 驗證年齡是否為正數
+      if (!age || age <= 0) {
+        return "請輸入正確的年齡。";
+      }
+
+      // 驗證聯絡電話格式
+      if (!/^\d{10,}$/.test(phone)) {
+        return "請輸入正確的聯絡電話（至少 10 位數字）。";
+      }
+
+      // 驗證課程是否選擇
+      if (!course) {
+        return "請選擇課程。";
+      }
+
+      // 驗證開始和結束時間
+      if (new Date(startTime) >= new Date(endTime)) {
+        return "結束時間必須晚於開始時間。";
+      }
+
+      return ""; // 如果一切正常，返回空字串
+    }
+
+    document.getElementById('submit-button').addEventListener('click', async () => {
+      // 顯示處理中
+      const loading = document.getElementById('loading');
+      loading.style.display = 'block';
+
+      // 抓取表單資料
+      const data = {
+        name: document.getElementById('name').value,
+        age: document.getElementById('age').value,
+        phone: document.getElementById('phone').value,
+        course: document.getElementById('course').value,
+        startTime: document.getElementById('startTime').value,
+        endTime: document.getElementById('endTime').value,
+      };
+
+      // 驗證表單資料
+      const error = validateForm(data);
+      if (error) {
+        const errorMessage = document.getElementById("error-message");
+        errorMessage.textContent = error;
+        errorMessage.style.display = "block";
+        loading.style.display = 'none'; // 隱藏處理中
+        return;
+      }
+
+      try {
+        // 發送 POST 請求
+        const url = "https://script.google.com/macros/s/AKfycby8ApCz-NrFKbSUqUdWrRg8m52bCflDGA7d4sK7gwpB93REMiXAO95OGP5W_WnwTVj28Q/exec"; // 替換為您的 Google Apps Script URL
+        const response = await fetch(url, {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*' // 確保 CORS 頭部設置正確
+          },
+        });
+
+        const result = await response.json();
+
+        if (result.status === "success") {
+          alert("預約成功！");
+          document.getElementById('bookingForm').reset();
+        } else {
+          alert("提交失敗：" + result.message);
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        alert("提交失敗，請稍後再試。");
+      } finally {
+        loading.style.display = 'none'; // 隱藏處理中
+      }
+    });
+  </script>
+</body>
+</html>
